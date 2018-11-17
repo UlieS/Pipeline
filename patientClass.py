@@ -1,8 +1,5 @@
 import os
-
-data_dir = "./data/dicoms/"
-contour_type = "/i-contours"
-data_dir_con = "./data/contourfiles/" 
+import path_settings as ps
 
 class Patient:
     """  Patient class to organize files
@@ -14,8 +11,8 @@ class Patient:
     def __init__(self, patient_id, original_id):
         self.patient_id = patient_id
         self.original_id = original_id
-        self.dicom_path = data_dir+patient_id
-        self.contour_path = data_dir_con+original_id+contour_type
+        self.dicom_path = ps.DATA_DIR_DICOM+patient_id
+        self.contour_path = ps.DATA_DIR_CONTOUR+original_id+ps.CONTOUR_TYPE
 
 
     def map_dicom_contour(self):

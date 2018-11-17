@@ -2,9 +2,16 @@
 
 import pydicom
 from pydicom.errors import InvalidDicomError
-
 import numpy as np
 from PIL import Image, ImageDraw
+import pandas as pd
+import os 
+from patientClass import Patient 
+import save
+import h5py
+import random
+import path_settings as ps
+
 
 
 def parse_contour_file(filename):
@@ -65,6 +72,8 @@ def parse_dicom_file(filename):
         return dcm_dict
     except InvalidDicomError:
         return None
+    except:
+        print(" Problem reading DICOM file.")
 
 
 def poly_to_mask(polygon, width, height):
@@ -85,3 +94,64 @@ def poly_to_mask(polygon, width, height):
 
 
 
+def generate_input_target_arrays(linkfile):
+    """ pipeline to generate the input and target arrays 
+
+    :param linkfile: path to csv file containing the mapping of 
+     patient_id and original_id
+    :return: tuple of np.arrays for input and target data
+    """
+
+    targets = []
+    inputs = []
+
+    patient_original_id_mapping = link_patient_contour_id(linkfile)
+
+    # iterate over all patients 
+    for patient_id, original_id in patient_original_id_mapping.items():
+        patient = Patient(patient_id,original_id)
+        dicom_contour_mapping = patient.map_dicom_contour()
+
+        # iterate through valid dicom and contour pairs 
+        for dicom, contour in dicom_contour_mapping.items():
+            dicom_pixel_data = parse_dicom_file(patient.dicom_path+"/"+dicom)
+
+            # TODO replace quickfix for handling corrupt string
+            contour = contour.strip("._")
+
+            # apply parsing functions to obtain target and input arrays 
+            contour_tuples = parse_contour_file(patient.contour_path+"/"+contour)
+            height, width = dicom_pixel_data["pixel_data"].shape
+            mask = poly_to_mask(contour_tuples, height, width)
+
+            targets.append(mask)
+            inputs.append(dicom_pixel_data["pixel_data"])
+
+    return np.array(inputs), np.array(targets)
+
+
+
+def link_patient_contour_id(linkfile):
+    """ function to create a mapping between patient_id and original_id
+
+    :param link: path to csv file that contains the mapping between 
+     patient_id (first column) and contour_id (second column)
+    :return: dict containing patient_id as key and contour_id as item
+    """
+    try:
+        file = pd.read_csv(linkfile)
+        
+        mapping = {}
+        for idx in range(1,file.shape[0]):
+            mapping[file.iloc[idx,0]]= file.iloc[idx,1]
+        return mapping
+
+    except FileNotFoundError:
+        print("Path to Linkfile not found.")   
+        return None 
+    except TypeError:
+        print("Path to Linkfile is None Type.")
+        return None
+    except Exception as e:
+        print(e)
+        return None

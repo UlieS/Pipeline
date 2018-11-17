@@ -1,9 +1,12 @@
+""" Unittests for parsing.py """
+
 import unittest
 import parsing 
 import os 
 import numpy as np
 import pydicom
 import matplotlib.pyplot as plt
+import path_settings as ps
 
 
 class TestParsing(unittest.TestCase):
@@ -16,18 +19,15 @@ class TestParsing(unittest.TestCase):
          - output file includes all information from input file 
          - correct error handling when file not existant
         """
-        contourtype = "i-contours"
-        data_dir = "./data/contourfiles/"
 
         # tests all available data on the function
-        for patient_dir in os.listdir(data_dir):
-            file_path = os.path.join(data_dir,patient_dir+"/"+contourtype)
+        for patient_dir in os.listdir(ps.DATA_DIR_CONTOUR):
+            file_path = os.path.join(ps.DATA_DIR_CONTOUR,patient_dir+ps.CONTOUR_TYPE)
 
             for contour in os.listdir(file_path):   
-                # TODO replace quickfix for corrupt filenames
-                contourfile = file_path+"/"+contour.strip(".").strip("_")
+                # TODO replace quickfix for handling corrupt string
+                contourfile = file_path+"/"+contour.strip("._")
               
-                # generate output returned by the function to be tested
                 output = parsing.parse_contour_file(contourfile)
 
                 # test data type
@@ -56,14 +56,12 @@ class TestParsing(unittest.TestCase):
          - correct error handling when file not existant
         """
 
-        data_dir = "./data/dicoms/"
-
-        for patient_dir in os.listdir(data_dir):
-            for dicom in os.listdir(os.path.join(data_dir,patient_dir)):
+        for patient_dir in os.listdir(ps.DATA_DIR_DICOM):
+            for dicom in os.listdir(os.path.join(ps.DATA_DIR_DICOM,patient_dir)):
                 
                 # TODO replace quickfix of repairing file string
                 dicom = dicom.strip(".").strip("_")
-                file_path = os.path.join(data_dir,patient_dir) + "/"+dicom
+                file_path = os.path.join(ps.DATA_DIR_DICOM,patient_dir) + "/"+dicom
 
                 # run function on dicom file
                 output = parsing.parse_dicom_file(file_path)
@@ -71,6 +69,7 @@ class TestParsing(unittest.TestCase):
                 # test output format
                 self.assertIsInstance(output, dict)
                 self.assertIsInstance(output['pixel_data'], np.ndarray)
+                self.assertEqual(output['pixel_data'].shape, (256,256))
 
 
         # test error handling
@@ -78,7 +77,23 @@ class TestParsing(unittest.TestCase):
         self.assertRaises(TypeError, parsing.parse_dicom_file(None))
 
 
+    def test_generate_input_target_arrays(self):
+        """
 
+        """
+        output = parsing.generate_input_target_arrays(ps.LINKFILE)
+        input, target = output
+
+        self.assertIsInstance(input, np.ndarray)
+        self.assertIsInstance(target, np.ndarray)
+
+        # test equal length of input and target
+        self.assertEqual(input.shape[0], target.shape[0])
+       
+        # test equal shape of arrays in target and input
+        # only makes sense if previous test ran ok
+        for i in range(input.shape[0]):
+            self.assertEqual(input[i].shape, target[i].shape)
 
 
 

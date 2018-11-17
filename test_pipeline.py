@@ -3,24 +3,23 @@ import parsing
 import os 
 import numpy as np
 import pipeline
-
+import path_settings
 
 class TestPipeline(unittest.TestCase):
 
-    def test_pipe(self):
-        """
+    def test_pipe_data(self):
+        datagen = pipeline.pipe_data(7)
+        for batch in datagen:
+            self.assertIsInstance(batch,tuple)
+            
+            input, target = batch
+            self.assertEqual(target.shape[0], 7)
+            self.assertEqual(input.shape[0], 7)
+            self.assertIsInstance(input[0], np.ndarray)
+            self.assertIsInstance(target[0], np.ndarray)
+            self.assertEqual(input.shape[1], 256)
+            self.assertEqual(target.shape[1], 256)
 
-        """
-        output = pipeline.pipe("./data/link.csv")
-        input, target = output
 
-        self.assertIsInstance(input, np.ndarray)
-        self.assertIsInstance(target, np.ndarray)
-
-        # test equal length of input and target
-        self.assertEqual(input.shape[0], target.shape[0])
-       
-        # test equal shape of arrays in target and input
-        # only makes sense if previous test ran ok
-        for i in range(input.shape[0]):
-            self.assertEqual(input[i].shape, target[i].shape)
+if __name__ == "__main__":
+    unittest.main()
