@@ -123,7 +123,7 @@ def generate_input_target_arrays(linkfile):
             mask = poly_to_mask(contour_tuples, height, width)
             
             # if visualization of mask is wanted
-            # visualize_mask(mask, patient_id, dicom, save = True)
+            visualize_mask(mask, patient_id, dicom, save = True)
 
             targets.append(mask)
             inputs.append(dicom_pixel_data["pixel_data"])
@@ -173,3 +173,4 @@ def visualize_mask(mask, patient_id = None, dicom = None,  save = False,):
     if save:
         plt.savefig('./data/'+patient_id+"_"+dicom+".png")
 
+d = generate_input_target_arrays(ps.LINKFILE)

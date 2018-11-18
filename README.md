@@ -2,7 +2,7 @@ Preprocessing Pipeline for Medical Image Data
 
 - pipeline.py is the starting point of the program. 
 - for unittests run python -m unittest 
-- before running, modify path_settings.py according to data folder 
+- if data file structure is different than the intital provided data, modify path_settings.py according to data folder 
   structure that is being used
 
 Some assumptions made by me :
