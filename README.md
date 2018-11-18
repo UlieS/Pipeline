@@ -13,7 +13,7 @@ Questions:
 
 Part 1:
 
-1. I implemented unittests to check for the expected output of the given functions. For parse_dicom and parse_contour I wrote independant testcases while I could only verify the polygon_to_mask function as part of the wrapper generate_input_target_arrays(). I also tested the validity of some masks by visualizing them in a matplotlib plot. It seemed to make sense, as I expected an inner contour to be a filled round shape, which differs in size across the slices. An example plot can be viewed in the data folder. 
+1. I implemented unittests to check for the expected output of the given functions. For parse_dicom and parse_contour I wrote independant testcases while I could only verify the polygon_to_mask function as part of the wrapper generate_input_target_arrays(). I also tested the validity of some masks by visualizing them in a matplotlib plot. It seemed to make sense, as I expected an inner contour to be a filled round shape, which differs in size across the slices. Some example plots to quickly scan through can be viewed in the plots folder. 
 
 2. In the intial code there was an import of 'dicom' which I assumed to be referring to the pydicom module. In the first function there was no check for potentially missing input files, so I added a try and except block. Additionally, I added more functions to wrap the given ones and map dicoms with their respective contour files. 
 
