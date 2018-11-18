@@ -1,7 +1,7 @@
 import numpy as np
+import keras
 
-
-class DataGenerator():
+class DataGenerator(keras.utils.Sequence):
 
     def __init__(self,batchsize, input, target):
         self.batchsize = batchsize
@@ -18,10 +18,11 @@ class DataGenerator():
         np.random.shuffle(self.indices)
 
     def __getitem__(self, idx):
-        inds = self.indices[idx:idx+self.batchsize]
+        inds = self.indices[idx * self.batchsize:(idx + 1) * self.batchsize]
         input_batch = self.input[inds]
         target_batch = self.target[inds]
-        #input_batch = np.array(np.resize(input[inds], (self.batchsize,1,self.dim,self.dim,)))
-        #target_batch =  np.array(np.resize(target[inds], (self.batchsize,1,self.dim,self.dim)))
+        
+        # for verifying covering all instances return inds 
+        # return input_batch, target_batch, inds
+        
         return input_batch, target_batch
-
