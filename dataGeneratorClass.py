@@ -33,6 +33,6 @@ class DataGenerator(keras.utils.Sequence):
         target_batch = self.target[inds]
         
         # for verifying covering all instances return inds       
-        #return input_batch, target_batch, inds
+        # return input_batch, target_batch, inds
         
         return input_batch, target_batch
