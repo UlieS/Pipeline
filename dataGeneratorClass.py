@@ -24,3 +24,4 @@ class DataGenerator():
         #input_batch = np.array(np.resize(input[inds], (self.batchsize,1,self.dim,self.dim,)))
         #target_batch =  np.array(np.resize(target[inds], (self.batchsize,1,self.dim,self.dim)))
         return input_batch, target_batch
+

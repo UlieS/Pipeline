@@ -5,7 +5,6 @@ import parsing
 import os 
 import numpy as np
 import pydicom
-import matplotlib.pyplot as plt
 import path_settings as ps
 
 
@@ -78,14 +77,21 @@ class TestParsing(unittest.TestCase):
 
 
     def test_generate_input_target_arrays(self):
-        """
-
+        """ function to verify the wrapper of all functions in parsing.py
+            
+            tests for:
+            - correct input, target datatype and size
+            - correct number of patients processed
         """
         output = parsing.generate_input_target_arrays(ps.LINKFILE)
         input, target = output
 
         self.assertIsInstance(input, np.ndarray)
         self.assertIsInstance(target, np.ndarray)
+
+        # correct number of patients 
+        patient_dicom_mapping = parsing.link_patient_contour_id(ps.LINKFILE)
+        self.assertEqual(len(patient_dicom_mapping),5)
 
         # test equal length of input and target
         self.assertEqual(input.shape[0], target.shape[0])
@@ -94,6 +100,7 @@ class TestParsing(unittest.TestCase):
         # only makes sense if previous test ran ok
         for i in range(input.shape[0]):
             self.assertEqual(input[i].shape, target[i].shape)
+        
 
 
 
@@ -103,10 +110,5 @@ def file_length(fname):
             pass
     return i + 1
 
-
-def visualize_mask(mask):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.imshow(mask, aspect='auto', cmap=plt.cm.gray, interpolation='nearest')
 
 

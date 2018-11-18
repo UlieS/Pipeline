@@ -41,3 +41,4 @@ class Patient:
                 dicom_contour_mapping[dicom] = contour
         
         return dicom_contour_mapping
+

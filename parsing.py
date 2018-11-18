@@ -11,6 +11,7 @@ import save
 import h5py
 import random
 import path_settings as ps
+import matplotlib.pyplot as plt 
 
 
 
@@ -97,8 +98,6 @@ def poly_to_mask(polygon, width, height):
 def generate_input_target_arrays(linkfile):
     """ pipeline to generate the input and target arrays 
 
-    :param linkfile: path to csv file containing the mapping of 
-     patient_id and original_id
     :return: tuple of np.arrays for input and target data
     """
 
@@ -123,6 +122,9 @@ def generate_input_target_arrays(linkfile):
             contour_tuples = parse_contour_file(patient.contour_path+"/"+contour)
             height, width = dicom_pixel_data["pixel_data"].shape
             mask = poly_to_mask(contour_tuples, height, width)
+            
+            # if visualization of mask is wanted
+            # visualize_mask(mask, patient_id, dicom, save = True)
 
             targets.append(mask)
             inputs.append(dicom_pixel_data["pixel_data"])
@@ -142,7 +144,7 @@ def link_patient_contour_id(linkfile):
         file = pd.read_csv(linkfile)
         
         mapping = {}
-        for idx in range(1,file.shape[0]):
+        for idx in range(0,file.shape[0]):
             mapping[file.iloc[idx,0]]= file.iloc[idx,1]
         return mapping
 
@@ -155,3 +157,20 @@ def link_patient_contour_id(linkfile):
     except Exception as e:
         print(e)
         return None
+
+
+
+def visualize_mask(mask, patient_id = None, dicom = None,  save = False,):
+    """ helper function to visualize the generated mask
+        :param mask: boolean 2D array
+        :param patient_id: string of patient id, optional for storing
+        :param dicom: string of dicom number, optional for storing
+        :param save: bool, optional, if storing of image is wanted
+    """
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.imshow(mask, aspect='auto', cmap=plt.cm.gray, interpolation='nearest')
+    if save:
+        plt.savefig('./data/'+patient_id+"_"+dicom+".png")
+
