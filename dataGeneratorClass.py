@@ -2,6 +2,16 @@ import numpy as np
 import keras
 
 class DataGenerator(keras.utils.Sequence):
+    """ Data Generator class for handling looping over data 
+        
+         to note: for verifying uniqueness of the covered samples per batch 
+         in unittest, comment in the additional inds return value 
+
+    :param batchsize: int to determine batchsize
+    :param input: np.array of input data
+    :param target: np.array of target data 
+    :return: instance of a data generator
+    """
 
     def __init__(self,batchsize, input, target):
         self.batchsize = batchsize
@@ -22,7 +32,7 @@ class DataGenerator(keras.utils.Sequence):
         input_batch = self.input[inds]
         target_batch = self.target[inds]
         
-        # for verifying covering all instances return inds 
-        # return input_batch, target_batch, inds
+        # for verifying covering all instances return inds       
+        #return input_batch, target_batch, inds
         
         return input_batch, target_batch
