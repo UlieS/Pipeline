@@ -24,7 +24,6 @@ def parse_contour_file(filename):
 
     coords_lst = []
     
-    # modification: add try and except for corrupt/not existing file
     try:
         with open(filename, 'r') as infile:
             for line in infile:
