@@ -1,19 +1,21 @@
 import unittest
-import parsing 
+import parsing
+import pipeline
+import path_settings as ps
 import os 
 import numpy as np
-import pipeline
-import path_settings
+
 
 class TestPipeline(unittest.TestCase):
     """ function to test the main function pipe_data()
 
-        when using this, modify generator to output indices as well
+        - when using this, modify dataClassGenerator to output indices as well, otherwise 
+        uniqueness check will fail 
+
         tests for:
         - correct output of generator 
         - correct batchsize
         - covering every sample
-        - randomness of output 
     """
 
     def test_pipe_data(self):
