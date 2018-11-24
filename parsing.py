@@ -97,39 +97,49 @@ def poly_to_mask(polygon, width, height):
 def generate_input_target_arrays(linkfile):
     """ pipeline to generate the input and target arrays 
 
+    :param linkfile: path to file containing links between patient id and original id
     :return: tuple of np.arrays for input and target data
     """
 
-    targets = []
+    icontour_targets = []
+    ocontour_targets = []
     inputs = []
 
     patient_original_id_mapping = link_patient_contour_id(linkfile)
-
+ 
     # iterate over all patients 
     for patient_id, original_id in patient_original_id_mapping.items():
         patient = Patient(patient_id,original_id)
-        dicom_contour_mapping = patient.map_dicom_contour()
+
+        dicom_contour_mapping = patient.dicom_contour_mapping_wrapper()
 
         # iterate through valid dicom and contour pairs 
         for dicom, contour in dicom_contour_mapping.items():
             dicom_pixel_data = parse_dicom_file(patient.dicom_path+"/"+dicom)
 
+            icontour, ocontour = contour
+
             # TODO replace quickfix for handling corrupt string
-            contour = contour.strip("._")
+            icontour = icontour.strip("._")
+            ocontour = ocontour.strip("._")
 
             # apply parsing functions to obtain target and input arrays 
-            contour_tuples = parse_contour_file(patient.contour_path+"/"+contour)
-            height, width = dicom_pixel_data["pixel_data"].shape
-            mask = poly_to_mask(contour_tuples, height, width)
-            
-            # if visualization of mask is wanted
-            visualize_mask(mask, patient_id, dicom, save = True)
+            icontour_tuples = parse_contour_file(patient.icontour_path+"/"+icontour)
+            ocontour_tuples = parse_contour_file(patient.ocontour_path+"/"+ocontour)
 
-            targets.append(mask)
+            height, width = dicom_pixel_data["pixel_data"].shape
+            icontour_mask = poly_to_mask(icontour_tuples, height, width)
+            ocontour_mask = poly_to_mask(ocontour_tuples, height, width)
+
+            # if visualization of mask is wanted
+            # visualize_mask(mask, patient_id, dicom, save = True)
+
+            icontour_targets.append(icontour_mask)
+            ocontour_targets.append(ocontour_mask)
+
             inputs.append(dicom_pixel_data["pixel_data"])
 
-    return np.array(inputs), np.array(targets)
-
+    return np.array(inputs), np.array(icontour_targets), np.array(ocontour_targets) 
 
 
 def link_patient_contour_id(linkfile):
@@ -159,7 +169,7 @@ def link_patient_contour_id(linkfile):
 
 
 
-def visualize_mask(mask, patient_id = None, dicom = None,  save = False,):
+def visualize_mask(mask, patient_id = None, dicom = None,  save = False):
     """ helper function to visualize the generated mask
         :param mask: boolean 2D array
         :param patient_id: string of patient id, optional for storing
@@ -172,5 +182,3 @@ def visualize_mask(mask, patient_id = None, dicom = None,  save = False,):
     ax.imshow(mask, aspect='auto', cmap=plt.cm.gray, interpolation='nearest')
     if save:
         plt.savefig('./data/'+patient_id+"_"+dicom+".png")
-
-d = generate_input_target_arrays(ps.LINKFILE)

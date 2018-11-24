@@ -33,17 +33,20 @@ class TestPipeline(unittest.TestCase):
         for batch in datagen: 
             count += 1 
 
-            # input, target, inds = batch
-            input, target = batch
+            # input, itarget, otarget, inds = batch
+            input, itarget, otarget = batch
              
-            self.assertIsInstance(batch,tuple)
-            self.assertEqual(target.shape[0], batch_size)
+            self.assertEqual(itarget.shape[0], batch_size)
+            self.assertEqual(otarget.shape[0], batch_size)
             self.assertEqual(input.shape[0], batch_size)
-            self.assertIsInstance(input[0], np.ndarray)
-            self.assertIsInstance(target[0], np.ndarray)
-            self.assertEqual(input.shape[1], 256)
-            self.assertEqual(target.shape[1], 256)
 
+            self.assertIsInstance(input[0], np.ndarray)
+            self.assertIsInstance(itarget[0], np.ndarray)
+            self.assertIsInstance(otarget[0], np.ndarray)
+
+            self.assertEqual(input.shape[1], 256)
+            self.assertEqual(itarget.shape[1], 256)
+            self.assertEqual(otarget.shape[1], 256)
             
             '''
             # used to verify uniqueness of instances, not checkable when generator returns 

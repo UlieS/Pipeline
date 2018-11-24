@@ -13,9 +13,10 @@ class DataGenerator(keras.utils.Sequence):
     :return: instance of a data generator
     """
 
-    def __init__(self,batchsize, input, target):
+    def __init__(self,batchsize, input, itarget, otarget):
         self.batchsize = batchsize
-        self.target = target
+        self.itarget = itarget
+        self.otarget = otarget
         self.input = input
         self.dim = input.shape[1]
         self.dataset_size = input.shape[0]
@@ -30,9 +31,12 @@ class DataGenerator(keras.utils.Sequence):
     def __getitem__(self, idx):
         inds = self.indices[idx * self.batchsize:(idx + 1) * self.batchsize]
         input_batch = self.input[inds]
-        target_batch = self.target[inds]
+        itarget_batch = self.itarget[inds]
+        otarget_batch = self.otarget[inds]
         
         # for verifying covering all instances return inds       
         # return input_batch, target_batch, inds
         
-        return input_batch, target_batch
+        return input_batch, itarget_batch, otarget_batch
+
+

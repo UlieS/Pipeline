@@ -14,15 +14,14 @@ def pipe_data(batchsize, store_data_on_disk = False):
     :return: data generator object to be used for training model
     """
 
-    input, target = parsing.generate_input_target_arrays(ps.LINKFILE)
+    input, itarget, otarget = parsing.generate_input_target_arrays(ps.LINKFILE)
     
     # for larger datasets keep the option of storing data to disk
     if store_data_on_disk:
-        save.save_data_to_disk(target,input)
+        save.save_data_to_disk(otarget,input)
 
-    data_generator = DataGenerator(batchsize, input, target)
+    data_generator = DataGenerator(batchsize, input, itarget, otarget)
     
     return data_generator
-
 
 

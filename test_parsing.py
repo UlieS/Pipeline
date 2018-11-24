@@ -18,10 +18,10 @@ class TestParsing(unittest.TestCase):
          - output file includes all information from input file 
          - correct error handling when file not existant
         """
-
+        CONTOUR_TYPE = "/i-contours"
         # tests all available data on the function
         for patient_dir in os.listdir(ps.DATA_DIR_CONTOUR):
-            file_path = os.path.join(ps.DATA_DIR_CONTOUR,patient_dir+ps.CONTOUR_TYPE)
+            file_path = os.path.join(ps.DATA_DIR_CONTOUR,patient_dir+CONTOUR_TYPE)
 
             for contour in os.listdir(file_path):   
                 # TODO replace quickfix for handling corrupt string
@@ -84,22 +84,25 @@ class TestParsing(unittest.TestCase):
             - correct number of patients processed
         """
         output = parsing.generate_input_target_arrays(ps.LINKFILE)
-        input, target = output
+        input, otarget, itarget = output
 
         self.assertIsInstance(input, np.ndarray)
-        self.assertIsInstance(target, np.ndarray)
+        self.assertIsInstance(itarget, np.ndarray)
+        self.assertIsInstance(otarget, np.ndarray)
 
         # correct number of patients 
         patient_dicom_mapping = parsing.link_patient_contour_id(ps.LINKFILE)
         self.assertEqual(len(patient_dicom_mapping),5)
 
         # test equal length of input and target
-        self.assertEqual(input.shape[0], target.shape[0])
-       
+        self.assertEqual(input.shape[0], itarget.shape[0])
+        self.assertEqual(input.shape[0], otarget.shape[0])
+
         # test equal shape of arrays in target and input
         # only makes sense if previous test ran ok
         for i in range(input.shape[0]):
-            self.assertEqual(input[i].shape, target[i].shape)
+            self.assertEqual(input[i].shape, itarget[i].shape)
+            self.assertEqual(input[i].shape, otarget[i].shape)
         
 
 
