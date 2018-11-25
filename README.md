@@ -45,27 +45,101 @@ mask for the o-contours as well. The generated input and target arrays were then
 Please refer to `DataAnalysis.ipynb` for more details and visualizations.
 1. First I tried to get an overview of the data by plotting the heart muscle as implied by the contouring. This showed that the contours were largely off in some cases, as the blood pool was not fully inside the o-contours which does not make sense. By counting the numbers of pixels from i-contours that were outside of the o-contour I found out, that the labeling was mostly okay for all patients except for patient 'SCD0000501'. 
 
+
+
+![](plots/Phase2_plots/contour_off1.png)
+![](plots/Phase2_plots/contour_off2.png)
+
+Problematic contour labeling of Patient 'SCD0000501'.
+
 In order to use a simple thresholding scheme to automatically create the i-contours from the o-contours, there should be a significant difference in pixel intensities between the muscle and the blood pool. The overall histogram plot of intensities shows that there is a large  overlap indicating that there cannot be just one global threshold. 
-(./plots/Phase2_plots/grayscale_overall.png)
+![H](plots/Phase2_plots/grayscale_overall.png)
 
 To visualize this intensity differences in the individual images I plotted the grayscale histograms comparing the distributions of the contour types. Again, there is mostly a large overlap implying misclassification errors. The objective is to keep these errors to the minimum. 
-![Examples where a threshold is hard to find](./plots/Phase2_plots/example_grayscale_distribution1.png)
-(./plots/Phase2_plots/example_grayscale_distribution2.png)
-![Examples where threshold is easy to find](./plots/Phase2_plots/example_grayscale_distribution3.png)
-(./plots/Phase2_plots/example_grayscale_distribution4.png)
+
+![](plots/Phase2_plots/example_grayscale_distribution1.png)
+![](plots/Phase2_plots/example_grayscale_distribution2.png)
+
+Examples where a threshold is hard to find.
+
+
+![](plots/Phase2_plots/example_grayscale_distribution3.png)
+![](plots/Phase2_plots/example_grayscale_distribution4.png)
+
+Examples where threshold is easy to find. 
 
 Instead, I applied [Scikit's implementation of the Otsu's method] (https://www.scipy-lectures.org/packages/scikit-image/index.html#binary-segmentation-foreground-background) for finding a threshold for binary segmentation of the image. Otsu's method searches for the threshold that minimizes the intra-class variance of the foreground and background. Since in this case I was given the o-contours and want to retrieve only the i-contours, it is possible to consider merely the inside of the o-contours and not the full image. Therefore, I tried Otsu's method on the intensities of the entire image and on the pixel data within the o-contours only. I plotted the histogram with both thresholds and the outcome of using these thresholds to segment the image into foreground and background. Evidently, the plots show better results for the second threshold based only on the partial pixel intensities. 
-![Examples of good results obtained by either threshold](./plots/Phase2_plots/otsu_segmentation1.png)(./plots/Phase2_plots/otsu_segmentation2.png)
+![](plots/Phase2_plots/otsu_segmentation1.png)
+![](plots/Phase2_plots/otsu_segmentation2.png) 
 
-![Examples of very bad results in full image threshold](./plots/Phase2_plots/otsu_segmentation3.png)
-![Examples of bad outcome related to bad labeling](./plots/Phase2_plots/otsu_segmentation4.png)
+Two examples of good results obtained by either threshold.
+
+![](plots/Phase2_plots/otsu_segmentation3.png) 
+
+Example of very bad results in full image threshold.
+![](plots/Phase2_plots/otsu_segmentation4.png) 
+
+Example of bad outcome related to bad labeling.
 
 I consider thresholding a valueable approach for this scenario, as there are more methods for finding a threshold which could improve the results.
 
-2. Another heuristic would be a region-based approach. Again, since I was given the o-contours, the i-contours will be inside this outline which could potentially be useful to grow regions from the inside out. This approach requires markers that indicate a definite assignment of pixels to blood pool or heart muscle. These markers should be extreme values such as the bimodal tops in the intensity histograms. However, this information is not available in this scenario. I initially tried to use central pixels within the o-contour as markers, but that did not work well. Instead, I chose global values roughly estimated from looking at the previous approach. I used Scikit's implementation of the watershed method, which "floods" areas of similar pixel intensities. The results did not look too bad. 
-In order to use the watershed algorithm you have to generate an elevation map using an edge detection operator (such as Sobel). The results show,that the choice of the markers and the quality of the elevation map are critical.
-![Example of a good segmentation](./plots/Phase2_plots/region_based2.png)
-![Here the threshold must have been to high as there was no marker for the i-contour group within the o-contour](./plots/Phase2_plots/region_based2.png)
-![Here the elevation map did not detect the full edges surrounding the blood pool and consequently the segmentation is off](./plots/Phase2_plots/region_based3.png)
+## Question 2 
 
-3. For a Deep Learning approach to solve this problem, labeled data is needed. 
+ Another heuristic would be a region-based approach. Again, since I was given the o-contours, the i-contours will be inside this outline which could potentially be useful to grow regions from the inside out. This approach requires markers that indicate a definite assignment of pixels to blood pool or heart muscle. These markers should be extreme values such as the bimodal tops in the intensity histograms. However, this information is not available in this scenario. I initially tried to use central pixels within the o-contour as markers, but that did not work well. Instead, I chose global values roughly estimated from looking at the previous approach. I used Scikit's implementation of the watershed method, which "floods" areas of similar pixel intensities. 
+In order to use the watershed algorithm you have to generate an elevation map using an edge detection operator (such as Sobel). The results show,that the choice of the markers and the quality of the elevation map are critical.
+![](plots/Phase2_plots/region_based2.png) 
+
+Example of a good segmentation.
+
+![](plots/Phase2_plots/region_based2.png) 
+
+Here the threshold must have been to high as there was no marker for the i-contour group within the o-contour.
+
+![](plots/Phase2_plots/region_based3.png)
+
+Here the elevation map did not detect the full edges surrounding the blood pool and consequently the segmentation is off. 
+
+The overall results did not look too bad, considering that the task is to focus on seperating o-contour and i-contour, not the full image. However, with a better markers, there could be better results. Therefore I used Otsu's method on the cropped image to find a threshold for the marker of the i-contours. This improved the results and even worked in the some cases where the contours were off. 
+![](plots/Phase2_plots/region_based_otsu2.png)
+![](plots/Phase2_plots/region_based_otsu1.png)
+
+In direct comparison of using Otsu's method to find a threshold to initialize markers and the global values for the markers, the first method mostly outperformed the latter. 
+![](plots/Phase2_plots/region_based_otsu_vs_global2.png)
+![](plots/Phase2_plots/region_based_otsu_vs_global1.png)
+
+Example where the global threshold for the markers worked better. 
+
+
+## Question 3
+ This could be viewed as a segmentation approach, where everything but the object of interest is considered background. This object could either be the heart muscle (logical xor of i-contour and o-contour) or the blood pool (i-contour). Either way, a ground truth is required. Given I picked heart muscle as the ground truth, a network has to be trained on segmenting the image into foreground (heart muscle) and background (everything else). the first to be able to afterwards predict i-contours from given o-contours. 
+
+ Another approach would be to detect the heart muscle first (which is easier) and then segment the interesting part of the image only. Since I am given the o-contours in this scenario, the detection part of this approach could be skipped and the segmentation part would only have to be applied to the identified parts. 
+
+
+There are only 46 images, which is not a lot. On top of trying to obtain more labeled data, I would use augmentation techniques such as rotation, flipping, scaling and shearing within small ranges to not distort the data too much. Then I would chose a network architecture suitable for segmentation such as U-net and train the network using dice coefficient or cross entropy loss. 
+
+
+## Question 4
+
+ Disadvantages of Deep Learning:
+- requires a lot of labeled data
+
+- requires time intensive training process
+
+Advantages of Deep Learning:
+
+- generalizes better, reusable for other datasets
+
+- takes a combination of global and local features into account
+
+Disadvantages of Heuristic Method (Region Based, Thresholding):
+
+- limited power, highly dependant on very specific features (pixel intensity for thresholding, spatial features for region based) which are 
+hardly combineable
+
+
+Advantages of Heuristic Method:
+
+- fast, no training process
+
+- no/limited labeled training data needed 
