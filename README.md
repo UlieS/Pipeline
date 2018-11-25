@@ -72,7 +72,8 @@ Examples where a threshold is hard to find.
 
 Examples where threshold is easy to find. 
 
-Instead, I applied [Scikit's implementation of the Otsu's method](https://www.scipy-lectures.org/packages/scikit-image/index.html#binary-segmentation-foreground-background) for finding a threshold for binary segmentation of the image. Otsu's method searches for the threshold that minimizes the intra-class variance of the foreground and background. Since in this case I was given the o-contours and want to retrieve only the i-contours, it is possible to consider merely the inside of the o-contours and not the full image. Therefore, I tried Otsu's method on the intensities of the entire image and on the pixel data within the o-contours only. I plotted the histogram with both thresholds and the outcome of using these thresholds to segment the image into foreground and background. Evidently, the plots show better results for the second threshold based only on the partial pixel intensities. 
+
+I applied [Scikit's implementation of the Otsu's method](https://www.scipy-lectures.org/packages/scikit-image/index.html#binary-segmentation-foreground-background) for finding a threshold for binary segmentation of the image. Otsu's method searches for the threshold that minimizes the intra-class variance of the foreground and background. Since in this case I was given the o-contours and want to retrieve only the i-contours, it is possible to consider merely the inside of the o-contours and not the full image. Therefore, I tried Otsu's method on the intensities of the entire image and on the pixel data within the o-contours only. I plotted the histogram with both thresholds and the outcome of using these thresholds to segment the image into foreground and background. Evidently, the plots show better results for the second threshold based only on the partial pixel intensities. 
 ![](plots/Phase2_plots/otsu_segmentation1.png)
 ![](plots/Phase2_plots/otsu_segmentation2.png) 
 
@@ -103,7 +104,7 @@ Here the threshold must have been to high as there was no marker for the i-conto
 
 Here the elevation map did not detect the full edges surrounding the blood pool and consequently the segmentation is off. 
 
-The overall results did not look too bad, considering that the task is to focus on seperating o-contour and i-contour, not the full image. However, with a better markers, there could be better results. Therefore I used Otsu's method on the cropped image to find a threshold for the marker of the i-contours. This improved the results and even worked in the some cases where the contours were off. 
+The overall results did not look too bad, considering that the task is to focus on seperating o-contour and i-contour, not the full image. However, with better markers, there could be better results. Therefore I used Otsu's method on the cropped image to find a threshold for the marker of the i-contours. This improved the results and even worked where the contours were off. 
 ![](plots/Phase2_plots/region_based_otsu2.png)
 ![](plots/Phase2_plots/region_based_otsu1.png)
 
@@ -117,12 +118,12 @@ Example where the global threshold for the markers worked better.
 
 
 ## Question 3
- This could be viewed as a segmentation approach, where everything but the object of interest is considered background. This object could either be the heart muscle (logical xor of i-contour and o-contour) or the blood pool (i-contour). Either way, a ground truth is required. Given I picked heart muscle as the ground truth, a network has to be trained on segmenting the image into foreground (heart muscle) and background (everything else). the first to be able to afterwards predict i-contours from given o-contours. 
+ This could be viewed as a segmentation approach, where everything but the object of interest is considered background. This object could either be the heart muscle (logical xor of i-contour and o-contour) or the blood pool (i-contour). Either way, a ground truth is required. Given I picked heart muscle as the ground truth, a network has to be trained on segmenting the image into foreground (heart muscle) and background (everything else).
 
  Another approach would be to detect the heart muscle first (which is easier) and then segment the interesting part of the image only. Since I am given the o-contours in this scenario, the detection part of this approach could be skipped and the segmentation part would only have to be applied to the identified parts. 
 
 
-There are only 46 images, which is not a lot. On top of trying to obtain more labeled data, I would use augmentation techniques such as rotation, flipping, scaling and shearing within small ranges to not distort the data too much. Then I would chose a network architecture suitable for segmentation such as U-net and train the network using dice coefficient or cross entropy loss. 
+There are only 46 images, which is not a lot. On top of trying to obtain more labeled data, I would use augmentation techniques such as rotation, flipping, scaling and shearing within small ranges to not distort the data too much. Then I would chose a network architecture suitable for segmentation such as U-net and train the network using dice coefficient or cross entropy loss which work well with segmentation tasks.
 
 
 ## Question 4
