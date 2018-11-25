@@ -22,7 +22,7 @@ python -m unittest
 ## Questions - Part 2:
 
 1. I built a data generator which handles the looping over the dataset and random sampling. In the first part, the pipeline only supplied the processed dataset as a whole.
-As [Keras] (https://keras.io/) uses these types of generators to feed data into their network, I built a similar data structure for further usage. I put it in a seperate class and wrapped Part 1 of generating the inputs and targets and Part 2 of creating a generator from the data in the main function **pipe_data()**. This generator has a fixed batch size, a fixed dataset size, which yields the amount of iterations it has to do for one epoch and samples the instances which are loaded per batch randomly. The indices for the chosen data samples are shuffled at the beginning and end of every epoch. 
+As [Keras](https://keras.io/) uses these types of generators to feed data into their network, I built a similar data structure for further usage. I put it in a seperate class and wrapped Part 1 of generating the inputs and targets and Part 2 of creating a generator from the data in the main function **pipe_data()**. This generator has a fixed batch size, a fixed dataset size, which yields the amount of iterations it has to do for one epoch and samples the instances which are loaded per batch randomly. The indices for the chosen data samples are shuffled at the beginning and end of every epoch. 
 
 2. I built unittests throughout development to incrementally built on working/tested functions. As I was already validating the creation of the inputs and targets in Part 1, I now focused on validating the generator. I tested the correct data types of the outputs and the variable batch size. It is rather hard to check the randomness of the generator and whether it covers every instance in one epoch as it has an infinite length and the only output is the data itself. I found a rather hacky solution by modifying the generator to output the indices of the data along with the arrays and checking the uniqueness of the indices per epoch in a hashtable. This validated, that each instance was outputted at least once. For the randomness criteria, I outputted the indices themselves to verify the randomness, but found, that the indices were not in a random order,despite calling np.random.shuffle() in the generator. Unfortunately, I found this bug too late and did not have enough time to fix it. I would assume that it comes from the fact, that the on_epoch_end() method of the generator only makes sense within the keras framework which triggers an on_epoch_end(). In further steps I would built the shuffling of indices into the generator without relying on this method.
 
@@ -46,6 +46,10 @@ Please refer to `DataAnalysis.ipynb` for more details and visualizations.
 1. First I tried to get an overview of the data by plotting the heart muscle as implied by the contouring. This showed that the contours were largely off in some cases, as the blood pool was not fully inside the o-contours which does not make sense. By counting the numbers of pixels from i-contours that were outside of the o-contour I found out, that the labeling was mostly okay for all patients except for patient 'SCD0000501'. 
 
 
+![](plots/Phase2_plots/muscle_ok.png)
+![](plots/Phase2_plots/muscle_ok2.png)
+
+Most contouring seemed to be okay. 
 
 ![](plots/Phase2_plots/contour_off1.png)
 ![](plots/Phase2_plots/contour_off2.png)
@@ -68,7 +72,7 @@ Examples where a threshold is hard to find.
 
 Examples where threshold is easy to find. 
 
-Instead, I applied [Scikit's implementation of the Otsu's method] (https://www.scipy-lectures.org/packages/scikit-image/index.html#binary-segmentation-foreground-background) for finding a threshold for binary segmentation of the image. Otsu's method searches for the threshold that minimizes the intra-class variance of the foreground and background. Since in this case I was given the o-contours and want to retrieve only the i-contours, it is possible to consider merely the inside of the o-contours and not the full image. Therefore, I tried Otsu's method on the intensities of the entire image and on the pixel data within the o-contours only. I plotted the histogram with both thresholds and the outcome of using these thresholds to segment the image into foreground and background. Evidently, the plots show better results for the second threshold based only on the partial pixel intensities. 
+Instead, I applied [Scikit's implementation of the Otsu's method](https://www.scipy-lectures.org/packages/scikit-image/index.html#binary-segmentation-foreground-background) for finding a threshold for binary segmentation of the image. Otsu's method searches for the threshold that minimizes the intra-class variance of the foreground and background. Since in this case I was given the o-contours and want to retrieve only the i-contours, it is possible to consider merely the inside of the o-contours and not the full image. Therefore, I tried Otsu's method on the intensities of the entire image and on the pixel data within the o-contours only. I plotted the histogram with both thresholds and the outcome of using these thresholds to segment the image into foreground and background. Evidently, the plots show better results for the second threshold based only on the partial pixel intensities. 
 ![](plots/Phase2_plots/otsu_segmentation1.png)
 ![](plots/Phase2_plots/otsu_segmentation2.png) 
 
@@ -87,7 +91,7 @@ I consider thresholding a valueable approach for this scenario, as there are mor
 
  Another heuristic would be a region-based approach. Again, since I was given the o-contours, the i-contours will be inside this outline which could potentially be useful to grow regions from the inside out. This approach requires markers that indicate a definite assignment of pixels to blood pool or heart muscle. These markers should be extreme values such as the bimodal tops in the intensity histograms. However, this information is not available in this scenario. I initially tried to use central pixels within the o-contour as markers, but that did not work well. Instead, I chose global values roughly estimated from looking at the previous approach. I used Scikit's implementation of the watershed method, which "floods" areas of similar pixel intensities. 
 In order to use the watershed algorithm you have to generate an elevation map using an edge detection operator (such as Sobel). The results show,that the choice of the markers and the quality of the elevation map are critical.
-![](plots/Phase2_plots/region_based2.png) 
+![](plots/Phase2_plots/region_based1.png) 
 
 Example of a good segmentation.
 
@@ -102,6 +106,8 @@ Here the elevation map did not detect the full edges surrounding the blood pool 
 The overall results did not look too bad, considering that the task is to focus on seperating o-contour and i-contour, not the full image. However, with a better markers, there could be better results. Therefore I used Otsu's method on the cropped image to find a threshold for the marker of the i-contours. This improved the results and even worked in the some cases where the contours were off. 
 ![](plots/Phase2_plots/region_based_otsu2.png)
 ![](plots/Phase2_plots/region_based_otsu1.png)
+
+Examples of using Otsu's method to find a treshold to initialize markers.
 
 In direct comparison of using Otsu's method to find a threshold to initialize markers and the global values for the markers, the first method mostly outperformed the latter. 
 ![](plots/Phase2_plots/region_based_otsu_vs_global2.png)
@@ -122,6 +128,7 @@ There are only 46 images, which is not a lot. On top of trying to obtain more la
 ## Question 4
 
  Disadvantages of Deep Learning:
+
 - requires a lot of labeled data
 
 - requires time intensive training process
@@ -130,7 +137,7 @@ Advantages of Deep Learning:
 
 - generalizes better, reusable for other datasets
 
-- takes a combination of global and local features into account
+- CNNs take a combination of global and local features into account
 
 Disadvantages of Heuristic Method (Region Based, Thresholding):
 
